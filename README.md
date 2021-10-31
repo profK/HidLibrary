@@ -1,3 +1,6 @@
+This is a Fork of Erguoto's nice little HID for windows library to which I am adding a few thinsg I need for full
+HID discovery.
+
 <h3>There has been quite a bit of interest in this little library over the years but unfortunately I'm not able to support it at this time. I'm also unable to answer questions about using it with different devices. So you're on your own if you decide to use it. Please feel free to fork it or send me a pull request if you would like to contribute.</h3>
 
 Hid Library
