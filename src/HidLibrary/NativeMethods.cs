@@ -252,6 +252,28 @@ namespace HidLibrary
 		    internal short NumberFeatureValueCaps;
 		    internal short NumberFeatureDataIndices;
 	    }
+	    
+	    [StructLayout(LayoutKind.Sequential)]
+	    internal struct HIDP_BUTTON_CAPS
+	    {
+		    internal short Usage;
+		    internal short UsagePage;
+		    internal short InputReportByteLength;
+		    internal short OutputReportByteLength;
+		    internal short FeatureReportByteLength;
+		    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 17)]
+		    internal short[] Reserved;
+		    internal short NumberLinkCollectionNodes;
+		    internal short NumberInputButtonCaps;
+		    internal short NumberInputValueCaps;
+		    internal short NumberInputDataIndices;
+		    internal short NumberOutputButtonCaps;
+		    internal short NumberOutputValueCaps;
+		    internal short NumberOutputDataIndices;
+		    internal short NumberFeatureButtonCaps;
+		    internal short NumberFeatureValueCaps;
+		    internal short NumberFeatureDataIndices;
+	    }
 
 	    [StructLayout(LayoutKind.Sequential)]
 	    internal struct HIDP_VALUE_CAPS
@@ -325,6 +347,9 @@ namespace HidLibrary
 
 	    [DllImport("hid.dll")]
 	    static internal extern int HidP_GetCaps(IntPtr preparsedData, ref HIDP_CAPS capabilities);
+	    
+	    [DllImport("hid.dll")]
+	    static internal extern int HidP_GetButtonCaps(IntPtr preparsedData, ref HIDP_CAPS capabilities);
 
 	    [DllImport("hid.dll")]
 	    static internal extern int HidP_GetValueCaps(short reportType, ref byte valueCaps, ref short valueCapsLength, IntPtr preparsedData);
