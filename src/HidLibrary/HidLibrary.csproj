@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Extensions.cs" />
     <Compile Include="HidAsyncState.cs" />
+    <Compile Include="HIDButtonCaps.cs" />
     <Compile Include="HidDevice.cs" />
     <Compile Include="HidDeviceAttributes.cs" />
     <Compile Include="HidDeviceCapabilities.cs" />
