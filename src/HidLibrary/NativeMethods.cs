@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 
 namespace HidLibrary
 {
@@ -18,6 +19,72 @@ namespace HidLibrary
 	    internal const uint WAIT_FAILED = 0xffffffff;
 
 	    internal const int WAIT_INFINITE = 0xffff;
+
+	    #region Button Caps
+	    public enum HIDP_REPORT_TYPE : UInt32
+    {
+        HidP_Input,
+        HidP_Output,
+        HidP_Feature
+    }
+
+    public struct ButtonCapsRange
+    {
+        public ushort UsageMin;
+        public ushort UsageMax;
+        public ushort StringMin;
+        public ushort StringMax;
+        public ushort DesignatorMin;
+        public ushort DesignatorMax;
+        public ushort DataIndexMin;
+        public ushort DataIndexMax;
+    }
+
+    public struct ButtonCapsNotRange
+    {
+        public ushort Usage;
+        public ushort Reserved1;
+        public ushort StringIndex;
+        public ushort Reserved2;
+        public ushort DesignatorIndex;
+        public ushort Reserved3;
+        public ushort DataIndex;
+        public ushort Reserved4;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public struct HIDP_BUTTON_CAPS
+    {
+        [FieldOffset(0)]
+        public ushort UsagePage;
+        [FieldOffset(2)]
+        public byte ReportID;
+        [FieldOffset(3)]
+        public bool IsAlias;
+        [FieldOffset(4)]
+        public ushort BitField;
+        [FieldOffset(6)]
+        public ushort LinkCollection;
+        [FieldOffset(8)]
+        public ushort LinkUsage;
+        [FieldOffset(10)]
+        public ushort LinkUsagePage;
+        [FieldOffset(12)]
+        public bool IsRange;
+        [FieldOffset(13)]
+        public bool IsStringRange;
+        [FieldOffset(14)]
+        public bool IsDesignatorRange;
+        [FieldOffset(15)]
+        public bool IsAbsolute;
+        //[FieldOffset(16)]
+        //public uint[] Reserved;
+        [FieldOffset(16 + 10 * 4)]
+        public ButtonCapsRange Range;
+        [FieldOffset(16 + 10 * 4)]
+        public ButtonCapsNotRange NotRange;
+    }
+    #endregion
 	    [StructLayout(LayoutKind.Sequential)]
 	    internal struct OVERLAPPED
 	    {
@@ -253,27 +320,7 @@ namespace HidLibrary
 		    internal short NumberFeatureDataIndices;
 	    }
 	    
-	    [StructLayout(LayoutKind.Sequential)]
-	    internal struct HIDP_BUTTON_CAPS
-	    {
-		    internal short Usage;
-		    internal short UsagePage;
-		    internal short InputReportByteLength;
-		    internal short OutputReportByteLength;
-		    internal short FeatureReportByteLength;
-		    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 17)]
-		    internal short[] Reserved;
-		    internal short NumberLinkCollectionNodes;
-		    internal short NumberInputButtonCaps;
-		    internal short NumberInputValueCaps;
-		    internal short NumberInputDataIndices;
-		    internal short NumberOutputButtonCaps;
-		    internal short NumberOutputValueCaps;
-		    internal short NumberOutputDataIndices;
-		    internal short NumberFeatureButtonCaps;
-		    internal short NumberFeatureValueCaps;
-		    internal short NumberFeatureDataIndices;
-	    }
+	    
 
 	    [StructLayout(LayoutKind.Sequential)]
 	    internal struct HIDP_VALUE_CAPS
@@ -348,8 +395,12 @@ namespace HidLibrary
 	    [DllImport("hid.dll")]
 	    static internal extern int HidP_GetCaps(IntPtr preparsedData, ref HIDP_CAPS capabilities);
 	    
-	    [DllImport("hid.dll")]
-	    static internal extern int HidP_GetButtonCaps(IntPtr preparsedData, ref HIDP_CAPS capabilities);
+	    //[DllImport("hid.dll")]
+	   // static internal extern int HidP_GetButtonCaps(HIDP_REPORT_TYPE ReportType, 
+		//    IntPtr buttonCaps, ref ushort ButtonCapsLength, IntPtr PreparsedData);
+		[DllImport("hid.dll")]
+		static public extern int HidP_GetButtonCaps([MarshalAs(UnmanagedType.U4)] HIDP_REPORT_TYPE ReportType,
+			IntPtr buttonCaps, ref ushort ButtonCapsLength, IntPtr PreparsedData);
 
 	    [DllImport("hid.dll")]
 	    static internal extern int HidP_GetValueCaps(short reportType, ref byte valueCaps, ref short valueCapsLength, IntPtr preparsedData);

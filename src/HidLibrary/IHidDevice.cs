@@ -35,6 +35,7 @@ namespace HidLibrary
         string Description { get; }
         HidDeviceCapabilities Capabilities { get; }
         HidDeviceAttributes Attributes { get;  }
+        HidDeviceButtons Buttons { get;  }
         string DevicePath { get; }
 
         bool MonitorDeviceEvents { get; set; }

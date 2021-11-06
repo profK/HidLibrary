@@ -135,7 +135,7 @@ namespace TestHarness
         {
             _deviceList = HidDevices.Enumerate().ToArray();
             //_deviceList = HidDevices.Enumerate(0x536, 0x207, 0x1c7).ToArray();
-            Devices.DisplayMember = "Description";
+            Devices.DisplayMember = "Name";
             Devices.DataSource = _deviceList;
             if (_deviceList.Length > 0) _selectedDevice = _deviceList[0];
         }

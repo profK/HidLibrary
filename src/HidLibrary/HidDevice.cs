@@ -1,5 +1,7 @@
 ﻿using System;
+using System.CodeDom;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +17,7 @@ namespace HidLibrary
         private readonly HidDeviceAttributes _deviceAttributes;
 
         private readonly HidDeviceCapabilities _deviceCapabilities;
+        private readonly HidDeviceButtons _deviceButtons;
         private DeviceMode _deviceReadMode = DeviceMode.NonOverlapped;
         private DeviceMode _deviceWriteMode = DeviceMode.NonOverlapped;
 
@@ -28,19 +31,22 @@ namespace HidLibrary
 
         internal HidDevice(string devicePath, string description = null)
         {
+           
             _deviceEventMonitor = new HidDeviceEventMonitor(this);
             _deviceEventMonitor.Inserted += DeviceEventMonitorInserted;
             _deviceEventMonitor.Removed += DeviceEventMonitorRemoved;
 
             _devicePath = devicePath;
             _description = description;
-
+          
             try
             {
                 var hidHandle = OpenDeviceIO(_devicePath, NativeMethods.ACCESS_NONE);
 
                 _deviceAttributes = GetDeviceAttributes(hidHandle);
                 _deviceCapabilities = GetDeviceCapabilities(hidHandle);
+                _deviceButtons = GetButtonCapabilities(hidHandle,
+                    (ushort)_deviceCapabilities.NumberInputButtonCaps);
 
                 CloseDeviceIO(hidHandle);
             }
@@ -56,6 +62,27 @@ namespace HidLibrary
         public string Description { get { return _description; } }
         public HidDeviceCapabilities Capabilities { get { return _deviceCapabilities; } }
         public HidDeviceAttributes Attributes { get { return _deviceAttributes; } }
+
+        public HidDeviceButtons Buttons
+        {
+            get { return _deviceButtons; }
+        }
+        
+        public string Name
+        {
+            get
+            {
+                if (ReadProduct(out var nameBuff))
+                {
+                    return Encoding.Unicode.GetString(nameBuff);
+                }
+                else
+                {
+                    return "GET NAME FAILED";
+                }
+            }
+        }
+
         public string DevicePath { get { return _devicePath; } }
 
         public bool MonitorDeviceEvents
@@ -223,7 +250,7 @@ namespace HidLibrary
 
         public bool ReadProduct(out byte[] data)
         {
-            data = new byte[64];
+            data = new byte[128];
             IntPtr hidHandle = IntPtr.Zero;
             bool success = false;
             try
@@ -489,6 +516,64 @@ namespace HidLibrary
                 NativeMethods.HidD_FreePreparsedData(preparsedDataPointer);
             }
             return new HidDeviceCapabilities(capabilities);
+        }
+        
+        private static HidDeviceButtons GetButtonCapabilities(
+            IntPtr hidHandle, ushort numCaps)
+        { 
+            //REMARK 1
+            
+
+            if (numCaps >0){
+                var preparsedDataPointer = default(IntPtr);
+
+                if (NativeMethods.HidD_GetPreparsedData(hidHandle, ref preparsedDataPointer))
+                {
+
+                    var structSize = Marshal.SizeOf(typeof(NativeMethods.HIDP_BUTTON_CAPS));
+                    var allocSize =  structSize * numCaps;
+                    var buttonCapsBuffer = Marshal.AllocHGlobal(allocSize);
+
+                    NativeMethods.HIDP_REPORT_TYPE reportType = NativeMethods.HIDP_REPORT_TYPE.HidP_Input;
+                    NativeMethods.HIDP_BUTTON_CAPS[] buttonCaps =
+                        new NativeMethods.HIDP_BUTTON_CAPS[numCaps];
+                    int val = (NativeMethods.HidP_GetButtonCaps(reportType, 
+                        buttonCapsBuffer, ref numCaps, preparsedDataPointer));
+                    //todo check return value
+                    for (int idx = 0; idx < numCaps; idx++)
+                    {
+                        IntPtr cStruct = buttonCapsBuffer + (idx * structSize);
+                        var csStruct = (NativeMethods.HIDP_BUTTON_CAPS) Marshal.PtrToStructure(cStruct,
+                            typeof(NativeMethods.HIDP_BUTTON_CAPS));
+                        buttonCaps[idx] = csStruct;
+                    }
+                    
+                    Marshal.FreeHGlobal(buttonCapsBuffer); // return sys mem
+                    
+                    return new HidDeviceButtons(buttonCaps);
+                }
+                else
+                {
+                    return new HidDeviceButtons();
+                }
+            }
+            else
+            {
+                return new HidDeviceButtons();
+            }
+        }
+        
+        private static void Intptr2StructArray<T>(IntPtr unmanagedArray, 
+            int length, out T[] mangagedArray)
+        {
+            var size = Marshal.SizeOf(typeof(T));
+            mangagedArray = new T[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                IntPtr ins = new IntPtr(unmanagedArray.ToInt64() + (i * size));
+                mangagedArray[i] = (T)Marshal.PtrToStructure(ins,typeof(T));
+            }
         }
 
         private bool WriteData(byte[] data, int timeout)

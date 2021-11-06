@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,16 +13,17 @@ namespace Enumtest
     {
         static void Main(string[] argv)
         {
-            foreach (var dev in HidDevices.Enumerate())
+            
+            foreach (var dev in HidDevices.Enumerate().ToArray())
             {
-                byte[] name = new byte[64];
-                dev.ReadProduct(out name);
-                Console.WriteLine(Encoding.Unicode.GetString(name));
-                var capabilities = dev.Capabilities;
-                byte[] featureData = new byte[capabilities.FeatureReportByteLength];
-                dev.ReadFeatureData(out featureData);
-                Console.WriteLine(featureData);
-                ParseFeatureData()
+                Console.WriteLine(dev.Name);
+                Console.WriteLine("Button Count: "+dev.Capabilities.NumberInputButtonCaps);
+                foreach (var button in dev.Buttons.buttons)
+                {
+                    foreach(var name in button.Names)
+                    Console.WriteLine("  "+name);
+                }
+                
             }
         }
     }

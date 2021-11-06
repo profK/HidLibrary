@@ -22,7 +22,8 @@ namespace HidLibrary
 
         public static IEnumerable<HidDevice> Enumerate()
         {
-            return EnumerateDevices().Select(x => new HidDevice(x.Path, x.Description));
+            return EnumerateDevices().Select(
+                x => new HidDevice(x.Path, x.Description));
         }
 
         public static IEnumerable<HidDevice> Enumerate(string devicePath)
