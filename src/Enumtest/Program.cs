@@ -16,12 +16,14 @@ namespace Enumtest
             
             foreach (var dev in HidDevices.Enumerate().ToArray())
             {
-                Console.WriteLine(dev.Name);
+                Console.WriteLine(dev.Name.Trim()+":"+dev.Capabilities.UsagePage);
                 Console.WriteLine("Button Count: "+dev.Capabilities.NumberInputButtonCaps);
+                
                 foreach (var button in dev.Buttons.buttons)
                 {
                     foreach(var name in button.Names)
-                    Console.WriteLine("  "+name);
+                        if (name!=null)
+                            Console.WriteLine("  "+name);
                 }
                 
             }
